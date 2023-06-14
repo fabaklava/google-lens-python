@@ -57,6 +57,19 @@ class GoogleLens:
 
         return data
 
+    def __get_prerender_script(self, html_content):
+        soup = BeautifulSoup(html_content, 'html.parser')
+        scripts = soup.find_all('script')
+        prerender_script = None
+        for script in scripts:
+            if 'window["prerenderData"]' in str(script):
+                prerender_script = script.string
+                break
+        if prerender_script is not None:
+            prerender_data = json.loads(prerender_script)
+            return prerender_data
+        return None
+
     def search_by_file(self, file_path: str):
         multipart = {'encoded_image': (file_path, open(file_path, 'rb')), 'image_content': ''}
         response = self.session.post(self.url + "/upload", files=multipart, allow_redirects=False)
