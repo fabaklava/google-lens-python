@@ -14,48 +14,48 @@ class GoogleLens:
         )
 
     def __parse_prerender_script(self, prerender_script):
-    data = {
-        "match": None,
-        "similar": []
-    }
+        data = {
+            "match": None,
+            "similar": []
+        }
 
-    try:
-        if prerender_script and prerender_script[0]:
-            data["match"] = {
-                "title": prerender_script[0][1][8][12][0][0][0],
-                "thumbnail": prerender_script[0][1][8][12][0][2][0][0],
-                "pageURL": prerender_script[0][1][8][12][0][2][0][4]
-            }
-    except (IndexError, KeyError):
-        pass
-
-    if data["match"] is not None:
         try:
-            visual_matches = prerender_script[1][1][8][8][0][12]
-        except (IndexError, KeyError):
-            return data
-    else:
-        try:
-            visual_matches = prerender_script[0][1][8][8][0][12]
-        except (IndexError, KeyError):
-            return data
-
-    for match in visual_matches:
-        try:
-            title = match[3]
-            thumbnail = match[0][0]
-            pageURL = match[5]
-            sourceWebsite = match[14]
-            data["similar"].append({
-                "title": title,
-                "thumbnail": thumbnail,
-                "pageURL": pageURL,
-                "sourceWebsite": sourceWebsite
-            })
+            if prerender_script and prerender_script[0]:
+                data["match"] = {
+                    "title": prerender_script[0][1][8][12][0][0][0],
+                    "thumbnail": prerender_script[0][1][8][12][0][2][0][0],
+                    "pageURL": prerender_script[0][1][8][12][0][2][0][4]
+                }
         except (IndexError, KeyError):
             pass
 
-    return data
+        if data["match"] is not None:
+            try:
+                visual_matches = prerender_script[1][1][8][8][0][12]
+            except (IndexError, KeyError):
+                return data
+        else:
+            try:
+                visual_matches = prerender_script[0][1][8][8][0][12]
+            except (IndexError, KeyError):
+                return data
+
+        for match in visual_matches:
+            try:
+                title = match[3]
+                thumbnail = match[0][0]
+                pageURL = match[5]
+                sourceWebsite = match[14]
+                data["similar"].append({
+                    "title": title,
+                    "thumbnail": thumbnail,
+                    "pageURL": pageURL,
+                    "sourceWebsite": sourceWebsite
+                })
+            except (IndexError, KeyError):
+                pass
+
+        return data
 
     def search_by_file(self, file_path: str):
         multipart = {'encoded_image': (file_path, open(file_path, 'rb')), 'image_content': ''}
@@ -69,7 +69,7 @@ class GoogleLens:
         prerender_script = self.__get_prerender_script(response.text)
 
         return self.__parse_prerender_script(prerender_script)
-        
+
     def search_by_url(self, url: str):
         response = self.session.get(self.url + "/uploadbyurl", params={"url": url}, allow_redirects=True)
 
